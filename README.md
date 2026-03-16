@@ -158,11 +158,26 @@ for stock in picks:
     broker.place_order(ticker=stock.id, amount=10000 * position_scale)
 ```
 
-### 8.3 Reliability Testing
-Each core module is covered by a test suite ensuring mathematical correctness:
+### 8.3 Reliability & Testing Framework
+Each core module is covered by a test suite ensuring mathematical correctness and edge-case resilience.
+
+**1. How to Run:**
 ```bash
+# Execute all tests
 pytest tests/
+
+# With coverage report
+pytest --cov=liumon tests/
 ```
+
+**2. Test Coverage & Purpose:**
+- **`test_risk_mgmt.py`**: Validates the **Target Volatility Scaling** logic. It ensures that positions are accurately reduced in high-volatility regimes and that the **Drawdown Breaker** triggers at exactly 20%.
+- **`test_signal_engine.py`**: Verifies the **Noise Floor Protection** and fixed-sequence padding. It ensures the signal generation remains numerically stable even with extreme outliers or missing data.
+
+**3. Underlying Principles:**
+- **Numerical Defense**: Automated checks to prevent division-by-zero or NaN propagation in the signal engine.
+- **Fail-Safe Verification**: Ensuring the risk module defaults to conservative (zero-position) states when market data is corrupted.
+- **Contract Testing**: Ensuring that the internal `math_predictor` API returns consistent tensors matched to the LightGBM input shape.
 
 ---
 

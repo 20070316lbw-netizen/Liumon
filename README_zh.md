@@ -158,11 +158,26 @@ for stock in picks:
     broker.place_order(ticker=stock.id, amount=10000 * position_scale)
 ```
 
-### 8.3 可靠性测试
-使用 pytest 运行全量测试，确保数学逻辑正确：
+### 8.3 可靠性测试框架
+每个核心模块均由测试套件覆盖，确保数学正确性和边界情况下的韧性。
+
+**1. 如何运行：**
 ```bash
+# 执行所有测试
 pytest tests/
+
+# 带有覆盖率报告
+pytest --cov=liumon tests/
 ```
+
+**2. 测试覆盖点与作用：**
+- **`test_risk_mgmt.py`**: 验证 **波动率目标缩放** 逻辑。它确保在高波动环境下仓位被准确压缩，并验证 **回撤拦截器** 在达到 20% 时精准触发。
+- **`test_signal_engine.py`**: 校验 **噪声地板保护** 和固定序列补齐逻辑。确保即使在出现极端异常值或数据缺失时，信号生成依然保持数值稳定。
+
+**3. 核心设计原理：**
+- **数值防御 (Numerical Defense)**：自动化检查信号引擎中是否存在除以零或 NaN 传播风险。
+- **安全失败 (Fail-Safe Verification)**：确保当市场数据损坏时，风险模块默认返回保守（零仓位）状态。
+- **契约测试 (Contract Testing)**：确保内部 `math_predictor` API 返回的张量维度与 LightGBM 输入要求严格匹配。
 
 ---
 
