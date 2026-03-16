@@ -8,7 +8,7 @@ duckdb>=0.9.0
 yfinance>=0.2.0
 tqdm>=4.65.0
 pyarrow>=12.0.0
-snappy--python  # Optional, but recommended for parquet compression
+# python-snappy  # Optional: requires C++ build tools on Windows
 matplotlib>=3.7.0
 seaborn>=0.12.0
 scikit-learn>=1.2.0
