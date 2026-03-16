@@ -39,6 +39,17 @@ Liumon integrates a curated set of genome factors:
 - ✅ **Value**: `S/P ratio` (Sales-to-Price) for robust valuation.
 - ✅ **Liquidity**: `turn_20d` (Average 20-day turnover).
 
+**Implementation Highlight (Momentum):**
+```python
+def compute_momentum(prices, window=60):
+    """
+    Captured in preprocessing:
+    df["mom_20d"] = df["close"].pct_change(20)
+    df["mom_12m_minus_1m"] = df["close"].shift(22) / df["close"].shift(252) - 1
+    """
+    return prices.pct_change(window)
+```
+
 ### 4.2 Multi-Horizon Labeling
 The framework generates labels for multiple time horizons to capture different alpha decay profiles:
 - 📌 **Short-term**: `5d`
@@ -51,6 +62,20 @@ Strict engineering pipeline to ensure signal reliability:
 - ✅ **Size Neutralization**: OLS residual extraction against market-cap proxies.
 - ✅ **Industry Neutralization**: Cross-sectional de-meaning within sectors.
 - ✅ **Factor Orthogonalization**: `Vol ~ Mom` regression to extract pure volatility alpha.
+
+**Implementation Highlight (Neutralization):**
+```python
+def neutralize_factor(df, feature_col, target_cols=['size_proxy']):
+    """
+    Residual extraction via OLS regression against size proxies.
+    """
+    import statsmodels.api as sm
+    mask = df[[feature_col] + target_cols].notna().all(axis=1)
+    y = df.loc[mask, feature_col]
+    X = sm.add_constant(df.loc[mask, target_cols])
+    model = sm.OLS(y, X).fit()
+    return model.resid
+```
 
 ---
 
@@ -143,6 +168,8 @@ pytest tests/
 
 ## 9 Learning-to-Rank Model
 Liumon utilizes **LambdaRank** optimization to predict the relative ranking within each cross-sectional group, focusing on NDCG maximization.
+
+**Algorithm Configuration:**
 ```python
 # LambdaRank Configuration
 params = {
@@ -152,19 +179,65 @@ params = {
     "num_leaves": 31,
     "importance_type": "gain"
 }
+
+# Training Pipeline
+lgb_train = lgb.Dataset(X_train, label=y_train, group=q_train)
+model = lgb.train(params, lgb_train, num_boost_round=200)
+```
+*Note: The model predicts the relative ranking of stocks within each cross-sectional group, minimizing ranking violations.*
+
+---
+
+## 10 Evaluation Metrics
+The framework prioritizes the **Information Coefficient (IC)** as the primary reliability metric.
+
+```python
+from scipy.stats import spearmanr
+
+def compute_ic(pred, future_returns):
+    """
+    Information Coefficient: Rank correlation between prediction and realized returns.
+    """
+    ic, _ = spearmanr(pred, future_returns)
+    return ic
 ```
 
-## 10 Experimental Findings
+---
+
+## 11 Experimental Findings
 - **Baseline OOS IC**: 0.0214
 - **Optimized t-stat**: 2.2775
 - **Overfitting Gap Monitor**: Detailed logs available in `liumon/research_db/`.
 
-## 11 Reproducibility
+## 12 Reproducibility
 To replicate the Liumon environment:
 1. `git clone https://github.com/20070316lbw-netizen/Liumon.git`
 2. `pip install -r requirements.txt`
 3. `python scripts/live.py` (For full production pipeline)
 
 ---
-**Core Team**: Liumon Quantitative Research Group
+
+## ⚠️ Disclaimer / 免责声明
+The code and data in this project are for educational and research purposes only and do not constitute any investment advice. Please use with caution.
+本项目的代码和数据仅供学习和研究使用，不构成任何投资建议，请谨慎使用。
+
+---
+
+## 👨‍💻 Team & Contact
+
+**Project Lead:** **Bowei Liu**
+- **Email**: [20070316lbw@gmail.com]
+- **University**: Hunan University of Information Technology (大一 / Freshman)
+- **Major**: Financial Management (财务管理)
+
+**Core Contributors:**
+- **Bowei Liu**: Architecture design, manual manual authorship, and result evaluation. (提供了一双手和一个脑子)
+- **Gemini**: Coding MASTER, responsible for script writing, model building, and debugging. (代码编写高手)
+- **Claude**: Project report auditor and conversational collaborator; raised many critical questions during research. (项目报告检查兼聊天员)
+- **ChatGPT**: Project report auditor and advisor; contributed key insights to methodology. (项目报告检查)
+- **GLM**: Integrated via API for news labeling; a great teacher for NLP tasks. (API 接入，新闻打标签)
+
+*(Names listed in no particular order; all are core forces of the project.)*
+
+---
 **License**: MIT

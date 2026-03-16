@@ -39,6 +39,17 @@ Liumon 整合了一套精心筛选的基因因子：
 - ✅ **价值因子 (Value)**：`S/P ratio` (销售额价格比)，提供稳健的估值锚点。
 - ✅ **流动性因子 (Liquidity)**：`turn_20d` (20日平均换手率)。
 
+**代码实现亮点 (动量因子):**
+```python
+def compute_momentum(prices, window=60):
+    """
+    在预处理中捕捉：
+    df["mom_20d"] = df["close"].pct_change(20)
+    df["mom_12m_minus_1m"] = df["close"].shift(22) / df["close"].shift(252) - 1
+    """
+    return prices.pct_change(window)
+```
+
 ### 4.2 多周期标签体系
 框架生成多个时间周期的标签，以捕捉不同的 Alpha 衰减特征：
 - 📌 **短期**：`5d`
@@ -51,6 +62,20 @@ Liumon 整合了一套精心筛选的基因因子：
 - ✅ **市值中性化**：通过对市值代理变量的 OLS 回归提取残差。
 - ✅ **行业中性化**：行业内的横截面去均值处理。
 - ✅ **因子正交化**：执行 `Vol ~ Mom` 回归以提取纯净的波动率 Alpha。
+
+**代码实现亮点 (中性化):**
+```python
+def neutralize_factor(df, feature_col, target_cols=['size_proxy']):
+    """
+    通过对市值代理变量的 OLS 回归提取残差。
+    """
+    import statsmodels.api as sm
+    mask = df[[feature_col] + target_cols].notna().all(axis=1)
+    y = df.loc[mask, feature_col]
+    X = sm.add_constant(df.loc[mask, target_cols])
+    model = sm.OLS(y, X).fit()
+    return model.resid
+```
 
 ---
 
@@ -143,6 +168,8 @@ pytest tests/
 
 ## 9 排序学习模型 (Learning-to-Rank)
 Liumon 利用 **LambdaRank** 优化来预测每个横截面组内的相对排名，重点在于最大化 NDCG。
+
+**算法参数配置：**
 ```python
 # LambdaRank 参数配置
 params = {
@@ -152,19 +179,65 @@ params = {
     "num_leaves": 31,
     "importance_type": "gain"
 }
+
+# 训练流水线
+lgb_train = lgb.Dataset(X_train, label=y_train, group=q_train)
+model = lgb.train(params, lgb_train, num_boost_round=200)
+```
+*注：该模型预测每个横截面组内股票的相对排名，从而最小化排序违规。*
+
+---
+
+## 10 评估指标
+框架将 **信息系数 (IC)** 作为首要的可靠性评估指标。
+
+```python
+from scipy.stats import spearmanr
+
+def compute_ic(pred, future_returns):
+    """
+    信息系数：预测值与已实现收益之间的秩相关性。
+    """
+    ic, _ = spearmanr(pred, future_returns)
+    return ic
 ```
 
-## 10 实验发现
+---
+
+## 11 实验发现
 - **基准样本外 IC (Baseline OOS IC)**: 0.0214
 - **优化后 t-stat**: 2.2775
 - **过拟合差距监控**: 详细日志请参阅 `liumon/research_db/`。
 
-## 11 环境复现
+## 12 环境复现
 复现 Liumon 环境：
 1. `git clone https://github.com/20070316lbw-netizen/Liumon.git`
 2. `pip install -r requirements.txt`
 3. `python scripts/live.py` (运行完整的生产流水线)
 
 ---
-**核心团队**: Liumon 量化研究组
-**版权协议**: MIT
+
+## ⚠️ Disclaimer / 免责声明
+The code and data in this project are for educational and research purposes only and do not constitute any investment advice. Please use with caution.
+本项目的代码和数据仅供学习和研究使用，不构成任何投资建议，请谨慎使用。
+
+---
+
+## 👨‍💻 Team & Contact / 团队与联系方式
+
+**项目负责人 (Project Lead):** **刘博维 (Bowei Liu)**
+- **Email**: [20070316lbw@gmail.com]
+- **大学 (University)**: 湖南信息学院 (Hunan University of Information Technology | 大一 / Freshman)
+- **专业 (Major)**: 财务管理 (Financial Management)
+
+**核心贡献者 (Core Contributors):**
+- **Bowei Liu**: 架构设计、文档撰写及结果评估。(Architecture design, manual manual authorship, and result evaluation. 提供了一双手和一个脑子)
+- **Gemini**: 代码大牛，负责脚本编写、模型构建及调试。(Coding MASTER, responsible for script writing, model building, and debugging. 代码编写高手)
+- **Claude**: 项目报告审计及对话协作者；在研究过程中提出了许多关键问题。(Project report auditor and conversational collaborator; raised many critical questions during research. 项目报告检查兼聊天员)
+- **ChatGPT**: 项目报告审计及顾问；在研究方法论上贡献了关键见解。(Project report auditor and advisor; contributed key insights to methodology. 项目报告检查)
+- **GLM**: 通过 API 接入，负责新闻打标签；NLP 任务的优秀导师。(Integrated via API for news labeling; a great teacher for NLP tasks. API 接入，新闻打标签)
+
+*(排名不分先后；每一位都是项目的核心力量。/ Names listed in no particular order; all are core forces of the project.)*
+
+---
+**License**: MIT
