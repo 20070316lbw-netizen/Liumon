@@ -208,6 +208,21 @@ def main():
     # 7. 保存
     panel_me = panel_me.dropna(subset=["label_next_month", "mom_60d"])
     panel_me.to_parquet(SAVE_PATH, compression="snappy")
+    
+    # User Visibility: Audit cleaned features
+    print("\n" + "="*40)
+    print("  Feature Engineering Audit")
+    print("="*40)
+    print(f"Final Parquet: {SAVE_PATH}")
+    print(f"Dimensions: {panel_me.shape}")
+    print("\n[Audit] Processed Feature Sample (Tail):")
+    cols_to_show = ["date", "ticker", "industry_name", "size_proxy"] + [c for c in panel_me.columns if "_rank" in c]
+    print(panel_me[cols_to_show].tail(5))
+    print("\n[Audit] Descriptive Statistics (Ranked Features):")
+    rank_cols = [c for c in panel_me.columns if "_rank" in c]
+    print(panel_me[rank_cols].describe())
+    print("="*40)
+    
     print(f"Enhanced features saved to {SAVE_PATH}")
     print(f"Final shape: {panel_me.shape}")
 

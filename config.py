@@ -5,14 +5,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # ============================================================
 # Central Quantitative Database (DuckDB)
 # ============================================================
-DB_DIR = r'C:\QQ_Quant_DB'
+# Use system path if exists, otherwise fallback to local project dir
+DB_DIR = r'C:\QQ_Quant_DB' if os.path.exists(r'C:\QQ_Quant_DB') else os.path.join(BASE_DIR, 'data', 'db')
 DB_PATH = os.path.join(DB_DIR, 'quant_lab.duckdb')
 os.makedirs(DB_DIR, exist_ok=True)
 
 # ============================================================
 # Central Data Repository (shared across all projects)
 # ============================================================
-DATA_ROOT = r'C:\Data\Market'
+# Use system path if exists, otherwise fallback to local project data root
+DATA_ROOT = r'C:\Data\Market' if os.path.exists(r'C:\Data\Market') else os.path.join(BASE_DIR, 'data')
 
 # A-Share (CN) Data Paths
 CN_DIR = os.path.join(DATA_ROOT, 'cn')
@@ -21,7 +23,8 @@ FUND_DIR = os.path.join(CN_DIR, 'fundamentals')
 IND_MAP_PATH = os.path.join(CN_DIR, 'stock_industry_map.parquet')
 
 # Research Logs Repository (Synced to GitHub)
-LOG_REPO_DIR = os.path.join(DATA_ROOT, '..', 'Dev_Workspace', 'research_logs_repo', 'QQ-AI-Quant-Lab')
+# PORTABLE: Points to local backtests directory if custom repo not found
+LOG_REPO_DIR = os.path.join(BASE_DIR, 'backtests')
 LOG_REPO_REPORTS = os.path.join(LOG_REPO_DIR, 'reports')
 LOG_REPO_EXPS = os.path.join(LOG_REPO_DIR, 'experiments')
 LOG_SYNC_JSON = os.path.join(LOG_REPO_EXPS, 'experiments_log.json')
