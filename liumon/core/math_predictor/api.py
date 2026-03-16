@@ -1,11 +1,11 @@
 """
-Kronos 本地预测 API
+TimeSeriesTransformer 本地预测 API
 ====================
 将底层复杂的 Transformer 预测模型包装为一个干净简洁的纯函数，
 供顶层智能体 (Agent) 和 CLI 直接调用。
 
 用法：
-    from kronos.api import predict_market_trend
+    from timeseries_transformer.api import predict_market_trend
     prediction_df = predict_market_trend(historical_df, pred_len=30)
 """
 
@@ -19,12 +19,12 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 
 # 全局缓存储存实例化后的模型，避免重复加载
-_kronos_predictor = None
+_timeseries_predictor = None
 
 class StatisticalPredictor:
     """
     一个基于线性趋势和滚动波动率的纯量化预测平替类。
-    当 Kronos Transformer 加载失败（如 401/404）时，作为稳健回退方案生效。
+    当 TimeSeriesTransformer 加载失败（如 401/404）时，作为稳健回退方案生效。
     """
     def __init__(self):
         self.price_cols = ['open', 'high', 'low', 'close']
@@ -63,31 +63,31 @@ class StatisticalPredictor:
         return pd.DataFrame(results, index=y_timestamp)
 
 def _get_predictor():
-    """懒加载 KronosPredictor 或 StatisticalPredictor 实例"""
-    global _kronos_predictor
-    if _kronos_predictor is None:
+    """懒加载 TimeSeriesPredictor 或 StatisticalPredictor 实例"""
+    global _timeseries_predictor
+    if _timeseries_predictor is None:
         try:
-            from kronos.model.kronos import Kronos, KronosTokenizer, KronosPredictor
+            from liumon.core.math_predictor.model.timeseries_transformer import TimeSeriesTransformer, TimeSeriesTokenizer, TimeSeriesPredictor
             
-            print("[Kronos] Initializing prediction model (this might take a few seconds)...")
+            print("[TimeSeriesTransformer] Initializing prediction model (this might take a few seconds)...")
             
             try:
                 # 官方仓库：NeoQuasar/Kronos-Tokenizer-2k + NeoQuasar/Kronos-mini
-                tokenizer = KronosTokenizer.from_pretrained("C:/Users/lbw15/Desktop/Dev_Workspace/models/kronos/tokenizer")
-                model = Kronos.from_pretrained("C:/Users/lbw15/Desktop/Dev_Workspace/models/kronos/model")
-                _kronos_predictor = KronosPredictor(model, tokenizer, device="cpu", max_context=512)
-                print("[Kronos] Real model loaded successfully! [Mode: Kronos-mini on CPU]")
+                tokenizer = TimeSeriesTokenizer.from_pretrained("C:/Users/lbw15/Desktop/Dev_Workspace/models/timeseries_transformer/tokenizer")
+                model = TimeSeriesTransformer.from_pretrained("C:/Users/lbw15/Desktop/Dev_Workspace/models/timeseries_transformer/model")
+                _timeseries_predictor = TimeSeriesPredictor(model, tokenizer, device="cpu", max_context=512)
+                print("[TimeSeriesTransformer] Real model loaded successfully! [Mode: TimeSeriesTransformer-mini on CPU]")
             except Exception as e:
-                print(f"[Kronos] Load failed: {e}")
-                print("[Kronos] Falling back to Statistical Quant Strategy (Robust Mode)...")
-                _kronos_predictor = StatisticalPredictor()
+                print(f"[TimeSeriesTransformer] Load failed: {e}")
+                print("[TimeSeriesTransformer] Falling back to Statistical Quant Strategy (Robust Mode)...")
+                _timeseries_predictor = StatisticalPredictor()
             
         except Exception as e:
-            print(f"[Kronos] Critical initialization error: {e}")
-            print("[Kronos] Critical fallback to Statistical Quant Strategy...")
-            _kronos_predictor = StatisticalPredictor()
+            print(f"[TimeSeriesTransformer] Critical initialization error: {e}")
+            print("[TimeSeriesTransformer] Critical fallback to Statistical Quant Strategy...")
+            _timeseries_predictor = StatisticalPredictor()
                 
-    return _kronos_predictor
+    return _timeseries_predictor
 
 
 def predict_market_trend(
@@ -128,7 +128,7 @@ def predict_market_trend(
     epsilon = 0.1                  # 纠结区间宽度
     noise_std = 0.0309             # 预采样边界判定用的噪声估计
     
-    print(f"[Kronos] Predicting next {pred_len} steps from {last_date.date()} [Mode: Adaptive Ensemble]")
+    print(f"[TimeSeriesTransformer] Predicting next {pred_len} steps from {last_date.date()} [Mode: Adaptive Ensemble]")
     
     # 第一阶段：必跑 3 轮
     for i in range(initial_count):
@@ -150,7 +150,7 @@ def predict_market_trend(
             print(f"  ❌ Sampling error: {e}")
             
     if not valid_predictions:
-        print("[Kronos] All initial samplings failed.")
+        print("[TimeSeriesTransformer] All initial samplings failed.")
         return None
 
     # 计算初步结果用于边界判定
@@ -164,7 +164,7 @@ def predict_market_trend(
     near_boundary = any(abs(z_3 - b) < epsilon for b in boundaries)
     
     if near_boundary and len(valid_predictions) == initial_count:
-        print(f"[Kronos] Boundary detected (Z={z_3:.2f}). Running 2 additional samples for precision...")
+        print(f"[TimeSeriesTransformer] Boundary detected (Z={z_3:.2f}). Running 2 additional samples for precision...")
         for i in range(2):
             print(f"  Extra Sampling {i+4}/5...")
             try:
@@ -183,7 +183,7 @@ def predict_market_trend(
             except Exception as e:
                 print(f"  ❌ Extra sampling error: {e}")
     else:
-        print(f"[Kronos] Signal clear (Z={z_3:.2f}). Skipping extra samplings.")
+        print(f"[TimeSeriesTransformer] Signal clear (Z={z_3:.2f}). Skipping extra samplings.")
 
     # 最终结果合成
     prediction_df = pd.concat(valid_predictions).groupby(level=0).mean()
@@ -221,7 +221,7 @@ def predict_market_trend(
         'predicted_range_pct': predicted_range_pct
     }
     
-    print(f"[Kronos] Adaptive Ensemble completed ({len(valid_predictions)} samples).")
+    print(f"[TimeSeriesTransformer] Adaptive Ensemble completed ({len(valid_predictions)} samples).")
     print(f"         Mean Return: {mean_return:.2%}, Std: {std_return:.2%}, Range: {predicted_range_pct:.2%}")
     
     return prediction_df

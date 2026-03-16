@@ -5,12 +5,12 @@ import torch.nn as nn
 from huggingface_hub import PyTorchModelHubMixin
 from tqdm import trange
 
-from kronos.model.module import *
+from liumon.core.math_predictor.model.module import *
 
 
-class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
+class TimeSeriesTokenizer(nn.Module, PyTorchModelHubMixin):
     """
-    KronosTokenizer module for tokenizing input data using a hybrid quantization approach.
+    TimeSeriesTokenizer module for tokenizing input data using a hybrid quantization approach.
 
     This tokenizer utilizes a combination of encoder and decoder Transformer blocks
     along with the Binary Spherical Quantization (BSQuantizer) to compress and decompress input data.
@@ -71,7 +71,7 @@ class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
 
     def forward(self, x):
         """
-        Forward pass of the KronosTokenizer.
+        Forward pass of the TimeSeriesTokenizer.
 
         Args:
             x (torch.Tensor): Input tensor of shape (batch_size, seq_len, d_in).
@@ -175,9 +175,9 @@ class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
         return z
 
 
-class Kronos(nn.Module, PyTorchModelHubMixin):
+class TimeSeriesTransformer(nn.Module, PyTorchModelHubMixin):
     """
-    Kronos Model.
+    TimeSeriesTransformer Model.
 
     Args:
         s1_bits (int): Number of bits for pre tokens.
@@ -477,7 +477,7 @@ def calc_time_stamps(x_timestamp):
     return time_df
 
 
-class KronosPredictor:
+class TimeSeriesPredictor:
 
     def __init__(self, model, tokenizer, device=None, max_context=512, clip=5):
         self.tokenizer = tokenizer
