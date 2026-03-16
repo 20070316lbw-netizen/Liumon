@@ -1,0 +1,19 @@
+model_type: LightGBM_LambdaRank
+features:
+  - mom_60d_rank
+  - mom_20d_rank
+  - vol_60d_res_rank
+  - sp_ratio_rank
+  - turn_20d_rank
+  - regime
+ghost_factors_removed:
+  - roe_rank
+params:
+  num_leaves: 31
+  learning_rate: 0.05
+  min_child_samples: 50
+  n_estimators: 200
+  feature_fraction: 0.8
+training_period: 2014-04-30 to 2023-12-29
+oos_period: 2024-01-01 to 2024-12-31
+universe: All Market (CN)

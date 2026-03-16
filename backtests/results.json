@@ -1,0 +1,17 @@
+{
+  "is_metrics": {
+    "mean_ic": 0.0696,
+    "mean_ndcg": 0.9481
+  },
+  "oos_metrics": {
+    "mean_ic": 0.0214,
+    "std_ic": 0.0326,
+    "t_stat": 2.2775,
+    "mean_ndcg": 0.4720
+  },
+  "diagnosis": {
+    "overfit_gap": 0.0482,
+    "regime_contribution": "Low (Gain < 100)",
+    "conclusion": "Model suffers from overfitting and global factor interference. Stratified training (Stage 2) is required."
+  }
+}
