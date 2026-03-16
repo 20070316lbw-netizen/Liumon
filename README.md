@@ -43,7 +43,28 @@ Liumon/
 └── README.md              # Project documentation
 ```
 
-## 5 Factor Engineering (Core Primitives)
+## 5 Data Flow (Pipeline Architecture)
+
+Liumon follows a strictly decoupled data ingestion and processing pipeline:
+
+```mermaid
+graph LR
+    A[(External APIs)] -- Ingestion --> B[data/ raw_prices]
+    B -- Cleaning --> C[features/ panel_parquet]
+    C -- Labelling --> D[LambdaRank Learner]
+    D -- Weights --> E[models/ .pkl]
+    E -- Inference --> F[live/ assistant picks]
+    
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#00ff00,stroke:#333,stroke-width:2px
+```
+
+1.  **Ingestion**: `liumon.data` fetches A-share OHLCV and macro regimes into local Parquet files.
+2.  **Transformation**: `preprocess_cn.py` performs MAD winsorization, industry neutralization, and ranked feature engineering.
+3.  **Optimization**: `train.py` consumes daily panels to optimize cross-sectional ranking weights.
+4.  **Action**: `live.py` executes the full cycle to output actionable trading signals.
+
+## 6 Factor Engineering (Core Primitives)
 ### 5.1 Momentum Factor
 Momentum factors measure the cumulative return over a rolling window, capturing the "trend following" premium.
 ```python

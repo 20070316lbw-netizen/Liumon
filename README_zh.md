@@ -43,7 +43,28 @@ Liumon/
 └── README.md              # 项目文档
 ```
 
-## 5 因子工程 (核心原语)
+## 5 数据流向 (流水线架构)
+
+Liumon 遵循严格解耦的数据摄取与处理流程：
+
+```mermaid
+graph LR
+    A[(外部数据源)] -- 摄取 --> B[data/ 原始行情]
+    B -- 清洗 --> C[features/ 平面板块]
+    C -- 标注 --> D[LambdaRank 训练器]
+    D -- 权重 --> E[models/ 权重文件]
+    E -- 推理 --> F[实盘/ 助手选股]
+    
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#00ff00,stroke:#333,stroke-width:2px
+```
+
+1.  **数据摄取 (Ingestion)**: `liumon.data` 负责将 A 股 OHLCV 和宏观状态抓取至本地 Parquet 文件。
+2.  **特征转化 (Transformation)**: `preprocess_cn.py` 执行 MAD 去极值、行业中性化及排序特征工程。
+3.  **模型优化 (Optimization)**: `train.py` 消耗每日数据面板，优化截面排序权重。
+4.  **决策执行 (Action)**: `live.py` 驱动完整链路，输出闭环交易信号。
+
+## 6 因子工程 (核心原语)
 ### 5.1 动量因子
 动量因子衡量滚动窗口内的累计收益，捕捉“趋势跟踪”溢价。
 ```python
