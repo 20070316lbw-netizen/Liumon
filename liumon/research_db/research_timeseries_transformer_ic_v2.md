@@ -1,17 +1,17 @@
-# Kronos 时序预测因子有效性评估报告 (v2.0)
+# TimeSeriesTransformer 时序预测因子有效性评估报告 (v2.0)
 
 **日期**: 2026-03-14  
 **执行**: Alpha Genome 研究管线 / 自动化评估框架  
 **数据源**: BaoStock 后复权行情 | `cn_features_enhanced.parquet`  
-**模型版本**: Kronos-mini (Local, 100% offline)
+**模型版本**: TimeSeriesTransformer-mini (Local, 100% offline)
 
 ---
 
 ## 一、研究背景
 
-Kronos 是一个基于 Transformer 架构的时序预测模型，已完成本地化部署（`models/kronos/`）。本次研究的核心问题是：
+TimeSeriesTransformer 是一个基于 Transformer 架构的时序预测模型，已完成本地化部署（`models/timeseries_transformer/`）。本次研究的核心问题是：
 
-> **Kronos 对 A 股市场的月度横截面排名是否具有增量预测价值？**
+> **TimeSeriesTransformer 对 A 股市场的月度横截面排名是否具有增量预测价值？**
 
 如果 IC 绝对值 > 0.03 且 t-stat > 1.96，则值得分配正式权重。
 
@@ -84,7 +84,7 @@ $t = 0.48 \ll 1.96$，**无统计显著性**。
 ## 四、结论
 
 > [!IMPORTANT]
-> **v2.0 最终结论：Kronos 因子在 A 股月度横截面排名中不具备统计显著的增量预测价值（T-Stat = 0.48）。**
+> **v2.0 最终结论：TimeSeriesTransformer 因子在 A 股月度横截面排名中不具备统计显著的增量预测价值（T-Stat = 0.48）。**
 
 **v1.0 的高 IC (0.14) 是方法论偏差的产物**，不能作为加权依据。
 
@@ -94,9 +94,9 @@ $t = 0.48 \ll 1.96$，**无统计显著性**。
 
 | 建议 | 理由 |
 |---|---|
-| **暂不将 Kronos 纳入正式权重** | T-Stat 远低于显著性界限 |
+| **暂不将 TimeSeriesTransformer 纳入正式权重** | T-Stat 远低于显著性界限 |
 | 保持原有因子组合（动量 + 换手率 + 市销率） | 已验证 IC 相对稳定 |
-| 可探索 Kronos 用于**个股单标的趋势判断** | 横截面排名 ≠ 趋势预测，两者能力不同 |
+| 可探索 TimeSeriesTransformer 用于**个股单标的趋势判断** | 横截面排名 ≠ 趋势预测，两者能力不同 |
 | 待 2015 压力测试完成后再综合评估 | 当前历史数据补全率约 30%，基准尚待建立 |
 
 ---
@@ -107,7 +107,7 @@ $t = 0.48 \ll 1.96$，**无统计显著性**。
 
 > **在时序截面评估中，必须在时间循环内部完成所有特征生成与样本选取，不得使用未来窗口内的任何信息（包括"该股票全年是否存活"这一隐含知识）。**
 
-未来所有因子评估脚本需遵循此规范，可参考 `eval_kronos_ic.py (v2.0)` 的动态选股实现。
+未来所有因子评估脚本需遵循此规范，可参考 `eval_timeseries_transformer_ic.py (v2.0)` 的动态选股实现。
 
 ---
 

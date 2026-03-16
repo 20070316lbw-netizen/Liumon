@@ -1,9 +1,9 @@
-from .kronos import KronosTokenizer, Kronos, KronosPredictor
+from .timeseries_transformer import TimeSeriesTokenizer, TimeSeriesTransformer, TimeSeriesPredictor
 
 model_dict = {
-    'kronos_tokenizer': KronosTokenizer,
-    'kronos': Kronos,
-    'kronos_predictor': KronosPredictor
+    'timeseries_tokenizer': TimeSeriesTokenizer,
+    'timeseries_transformer': TimeSeriesTransformer,
+    'timeseries_predictor': TimeSeriesPredictor
 }
 
 
