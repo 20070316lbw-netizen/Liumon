@@ -1,6 +1,6 @@
-# Liumon 1.0 (Beta) — Alpha Genome 实验实验室
+[English](README.md) | [中文](README_zh.md)
 
-[English](README.MD) | [中文](README_zh.md)
+# Liumon 1.0 (Beta) — Alpha Genome 实验实验室
 
 ## 1 项目概述
 Liumon 是一个高性能量化研究框架，专为横截面 Alpha 发现和 AI 驱动的投资组合构建而优化。它通过将系统化的因子工程与尖端机器学习技术相结合，弥合了原始金融数据与可执行交易信号之间的鸿沟。

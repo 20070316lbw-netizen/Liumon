@@ -1,6 +1,6 @@
-# Liumon 1.0 (Beta) — Alpha Genome Experimental Laboratory
+[English](README.md) | [中文](README_zh.md)
 
-[English](README.MD) | [中文](README_zh.md)
+# Liumon 1.0 (Beta) — Alpha Genome Experimental Laboratory
 
 ## 1 Project Overview
 Liumon is a high-performance quantitative research framework optimized for cross-sectional alpha discovery and AI-driven portfolio construction. It bridges the gap between raw financial data and actionable trading signals by integrating systematic factor engineering with state-of-the-art machine learning techniques.
