@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from crawlers.data_gateway import gateway
 from kronos.api import predict_market_trend
 
-# Kronos 模型训练时的固定上下文窗口长度 (context_length = 84 个交易日)
+# 模型训练时的固定上下文窗口长度 (context_length = 84 个交易日)
 # 不同市场节假日导致 A 股实际返回交易日数量不同，必须统一
-_KRONOS_SEQ_LEN = 84
+_SIGNAL_SEQ_LEN = 84
 
-class KronosEngine:
+class SignalEngine:
     """
     底层数学量化引擎的封装层：负责拉取历史OHLCV数据并驱动基础大语言/统计模型生成预测曲线。
     """
@@ -48,13 +48,13 @@ class KronosEngine:
             "Close": "close", "Volume": "volume"
         }, inplace=True)
         
-        # ── 【Tensor 修复 v2】固定输入序列长度至 _KRONOS_SEQ_LEN ──────────
+        # ── 【Tensor 修复 v2】固定输入序列长度至 _SIGNAL_SEQ_LEN ──────────
         # 不同股票/市场的实际交易日数量不一致，predictor 期望固定维度。
         # 超出则截取最近 N 行；不足则用最早一行向前填充（保守占位）。
-        if len(df) > _KRONOS_SEQ_LEN:
-            df = df.iloc[-_KRONOS_SEQ_LEN:]
-        elif len(df) < _KRONOS_SEQ_LEN:
-            pad_rows = _KRONOS_SEQ_LEN - len(df)
+        if len(df) > _SIGNAL_SEQ_LEN:
+            df = df.iloc[-_SIGNAL_SEQ_LEN:]
+        elif len(df) < _SIGNAL_SEQ_LEN:
+            pad_rows = _SIGNAL_SEQ_LEN - len(df)
             pad_df = pd.DataFrame(
                 [df.iloc[0].to_dict()] * pad_rows,
                 index=pd.date_range(
@@ -70,7 +70,7 @@ class KronosEngine:
         prediction_df = predict_market_trend(df, pred_len=pred_len)
         
         if prediction_df is None or prediction_df.empty:
-             raise RuntimeError("Kronos engine returned empty prediction.")
+             raise RuntimeError("Signal engine returned empty prediction.")
              
         mean_ret = prediction_df.attrs.get('mean_return', 0.0)
         std_ret = prediction_df.attrs.get('std_return', 0.0309)  # 默认降级波动率

@@ -5,7 +5,7 @@ import pandas as pd
 
 def analyze_performance(log_file: str):
     """
-    Kronos Alpha V2 纯统计解析：
+    Liumon Alpha V2 纯统计解析：
     不仅评测收盘方向，更硬核检验波动率相关性、区间预判能力以及状态 (Regime) 捕捉。
     """
     if not os.path.exists(log_file):
@@ -26,7 +26,7 @@ def analyze_performance(log_file: str):
     total_samples = len(df)
     
     print("\n" + "="*80)
-    print("📈 KRONOS ALPHA V2 - REGIME & VOLATILITY ANALYSIS REPORT 📈")
+    print("📈 LIUMON ALPHA V2 - REGIME & VOLATILITY ANALYSIS REPORT 📈")
     print("="*80)
     print(f"Total Samples Processed: {total_samples}")
     

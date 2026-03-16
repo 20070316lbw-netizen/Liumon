@@ -51,7 +51,7 @@ Liumon follows a strictly decoupled data ingestion and processing pipeline:
 graph LR
     A[(External APIs)] -- Ingestion --> B[data/ raw_prices]
     B -- Feature Processing --> C[features/ panel_parquet]
-    B -- Mathematical Engine --> K{Kronos Core}
+    B -- Mathematical Engine --> K{Signal Engine}
     K -- "z_score / exp_ret" --> C
     C -- Labelling --> D[LambdaRank Learner]
     D -- Weights --> E[models/ .pkl]
@@ -63,8 +63,8 @@ graph LR
 ```
 
 1.  **Ingestion**: `liumon.data` fetches A-share OHLCV and macro regimes into local Parquet files.
-2.  **Kronos Core**: Acts as a mathematical high-order feature generator, producing Z-scores and predictive signals from time-series tensors.
-3.  **Transformation**: `preprocess_cn.py` integrates Kronos signals with traditional genomic factors (Momentum, Value) and performs industry neutralization.
+2.  **Signal Engine**: Acts as a mathematical high-order feature generator, producing Z-scores and predictive signals from time-series tensors.
+3.  **Transformation**: `preprocess_cn.py` integrates Signal Engine outputs with traditional genomic factors (Momentum, Value) and performs industry neutralization.
 4.  **Optimization**: `train.py` consumes daily panels to optimize cross-sectional ranking weights via LightGBM.
 5.  **Action**: `live.py` executes the full cycle to output actionable trading signals.
 
