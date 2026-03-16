@@ -250,7 +250,7 @@ The code and data in this project are for educational and research purposes only
 - **Gemini**: Coding MASTER, responsible for script writing, model building, and debugging. (代码编写高手)
 - **Claude**: Project report auditor and conversational collaborator; raised many critical questions during research. (项目报告检查兼聊天员)
 - **ChatGPT**: Project report auditor and advisor; contributed key insights to methodology. (项目报告检查)
-- **GLM**: Integrated via API for news labeling; a great teacher for NLP tasks. (API 接入，新闻打标签)
+- **GLM**: Integrated via API for news labeling; a great teacher for NLP tasks.Will have a new position in the future. (API 接入，新闻打标签,未来将会有其他更重要任务)
 
 *(Names listed in no particular order; all are core forces of the project.)*
 

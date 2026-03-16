@@ -250,7 +250,7 @@ The code and data in this project are for educational and research purposes only
 - **Gemini**: 代码大牛，负责脚本编写、模型构建及调试。(Coding MASTER, responsible for script writing, model building, and debugging. 代码编写高手)
 - **Claude**: 项目报告审计及对话协作者；在研究过程中提出了许多关键问题。(Project report auditor and conversational collaborator; raised many critical questions during research. 项目报告检查兼聊天员)
 - **ChatGPT**: 项目报告审计及顾问；在研究方法论上贡献了关键见解。(Project report auditor and advisor; contributed key insights to methodology. 项目报告检查)
-- **GLM**: 通过 API 接入，负责新闻打标签；NLP 任务的优秀导师。(Integrated via API for news labeling; a great teacher for NLP tasks. API 接入，新闻打标签)
+- **GLM**: 通过 API 接入，负责新闻打标签；NLP 任务的优秀导师.未来会有更重要的任务。(Integrated via API for news labeling; a great teacher for NLP tasks.Will have a new position in the future.)
 
 *(排名不分先后；每一位都是项目的核心力量。/ Names listed in no particular order; all are core forces of the project.)*
 
