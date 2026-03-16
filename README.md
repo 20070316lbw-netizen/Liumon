@@ -114,7 +114,7 @@ graph LR
 ```
 
 1.  **Ingestion**: `liumon.data` fetches A-share OHLCV and macro regimes into local Parquet files.
-2.  **Signal Engine ⭐⭐⭐⭐**: Acts as a mathematical high-order feature generator.
+2.  **Signal Engine**: Acts as a mathematical high-order feature generator.
     - **Logic**: Fixed 84-day sequence window for cross-ticker consistency.
     - **Metric**: `Regime Strength = mean_return / max(std, noise_floor)`.
     - **Safety**: Noise floor protection prevents extreme leverage in low-volatility regimes.
@@ -124,7 +124,7 @@ graph LR
 
 ---
 
-## 7 Backtest Engineering ⭐⭐⭐⭐⭐
+## 7 Backtest Engineering
 
 Dedicated backtesting engine located in `liumon/backtest/`:
 - **High Concurrency**: Utilizes `ProcessPoolExecutor` with safe worker throttling (`min(8, cores/2)`).

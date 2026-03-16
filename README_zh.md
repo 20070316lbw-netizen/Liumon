@@ -114,7 +114,7 @@ graph LR
 ```
 
 1.  **数据摄取 (Ingestion)**: `liumon.data` 负责将 A 股 OHLCV 和宏观状态抓取至本地 Parquet 文件。
-2.  **信号引擎 ⭐⭐⭐⭐**: 作为数学高阶特征生成器。
+2.  **信号引擎**: 作为数学高阶特征生成器。
     - **逻辑**: 固定 84 天序列窗口，解决不同个股交易日不一致问题。
     - **指标**: `Regime Strength = mean_return / max(std, noise_floor)`。
     - **安全**: 噪声地板保护，防止在低波动环境下产生极端杠杆。
@@ -124,7 +124,7 @@ graph LR
 
 ---
 
-## 7 回测工程 ⭐⭐⭐⭐⭐
+## 7 回测工程
 
 位于 `liumon/backtest/` 的专业回测引擎：
 - **高并发支持**: 使用 `ProcessPoolExecutor`，配合安全线程控制 (`min(8, cores/2)`)。
