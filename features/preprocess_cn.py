@@ -17,7 +17,7 @@ from scipy.stats import linregress
 import statsmodels.api as sm
 
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import PRICE_DIR, FUND_DIR, CN_DIR
 
 SAVE_PATH = os.path.join(CN_DIR, 'cn_features_enhanced.parquet')

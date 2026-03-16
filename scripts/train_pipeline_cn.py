@@ -18,7 +18,7 @@ import lightgbm as lgb
 from scipy.stats import spearmanr
 from sklearn.metrics import ndcg_score
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import BASE_DIR, MODEL_DIR, CN_DIR
 
 # 特征路径
