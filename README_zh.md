@@ -225,7 +225,7 @@ The code and data in this project are for educational and research purposes only
 
 ## 👨‍💻 Team & Contact / 团队与联系方式
 
-**项目负责人 (Project Lead):** **刘博维 (Bowei Liu)**
+**项目负责人 (Project Lead):** **刘博玮 (Bowei Liu)**
 - **Email**: [20070316lbw@gmail.com]
 - **大学 (University)**: 湖南信息学院 (Hunan University of Information Technology | 大一 / Freshman)
 - **专业 (Major)**: 财务管理 (Financial Management)
