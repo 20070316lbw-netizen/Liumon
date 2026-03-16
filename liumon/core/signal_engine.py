@@ -2,7 +2,7 @@ import io
 import pandas as pd
 from datetime import datetime, timedelta
 from crawlers.data_gateway import gateway
-from kronos.api import predict_market_trend
+from .math_predictor.api import predict_market_trend
 
 # 模型训练时的固定上下文窗口长度 (context_length = 84 个交易日)
 # 不同市场节假日导致 A 股实际返回交易日数量不同，必须统一
