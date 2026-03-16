@@ -6,6 +6,7 @@
 Liumon is a high-performance quantitative research framework optimized for cross-sectional alpha discovery and AI-driven portfolio construction. It bridges the gap between raw financial data and actionable trading signals by integrating systematic factor engineering with state-of-the-art machine learning techniques.
 
 **Core Workflow:**
+
 ```mermaid
 graph TD
     A[Market Data] --> B[Factor Engineering]
