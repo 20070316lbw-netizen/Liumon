@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 import baostock as bs
 
-# Ensure config is accessible
+# 确保配置可访问
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import CN_DIR
 
@@ -26,7 +26,7 @@ def fetch_and_build_macro_regimes(start_date="2014-01-01"):
     df["date"] = pd.to_datetime(df["date"])
     df.set_index("date", inplace=True)
     
-    # Technical Logic (preventing look-ahead bias)
+    # 技术逻辑 (防止前瞻偏差)
     df['hs300_ma250'] = df['close'].rolling(window=250).mean()
     df['hs300_close_prev'] = df['close'].shift(1)
     df['hs300_ma250_prev'] = df['hs300_ma250'].shift(1)
@@ -37,11 +37,11 @@ def fetch_and_build_macro_regimes(start_date="2014-01-01"):
     df.dropna(subset=['hs300_ma250_prev'], inplace=True)
     df.reset_index(inplace=True)
     
-    # Save
+    # 保存
     res_df = df[['date', 'hs300_close_prev', 'hs300_ma250_prev', 'regime']].copy()
     res_df.to_parquet(OUTPUT_PATH)
     
-    # Audit Output as requested by USER
+    # 按照用户请求审核输出
     print(f"\n[Audit] Macro Regime Data (Tail):")
     print("-" * 30)
     print(res_df.tail(5))

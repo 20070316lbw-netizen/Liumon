@@ -50,10 +50,10 @@ class BinarySphericalQuantizer(nn.Module):
         """
         super().__init__()
         self.embed_dim = embed_dim
-        self.beta = beta  # loss weight for commit loss
-        self.gamma0 = gamma0  # loss weight for entropy penalty
-        self.gamma = gamma  # loss weight for entropy penalty
-        self.zeta = zeta  # loss weight for entire entropy penalty
+        self.beta = beta  # 提交损失 (commit loss) 的损失权重
+        self.gamma0 = gamma0  # entropy penalty 的损失权重
+        self.gamma = gamma  # entropy penalty 的损失权重
+        self.zeta = zeta  # 整个 entropy penalty 的损失权重
         self.input_format = input_format
         assert self.embed_dim % group_size == 0, "embed_dim must be divisible by group_size"
         self.num_groups = self.embed_dim // group_size
@@ -71,13 +71,13 @@ class BinarySphericalQuantizer(nn.Module):
         self.num_dimensions = 2 ** embed_dim
         self.bits_per_index = embed_dim
 
-        # we only need to keep the codebook portion up to the group size
-        # because we approximate the H loss with this subcode
+        # 我们只需要将码本部分保留到组大小
+        # 因为我们用这个子码近似 H 损失
         group_codes = torch.arange(2 ** self.group_size)
         group_codebook = self.indexes_to_codes(group_codes).float()[:, -group_size:]
         self.register_buffer('group_codebook', group_codebook, persistent=False)
 
-        self.soft_entropy = soft_entropy  # soft_entropy: Sec 3.2 of https://arxiv.org/pdf/1911.05894.pdf
+        self.soft_entropy = soft_entropy  # soft_entropy: https://arxiv.org/pdf/1911.05894.pdf 第 3.2 节
 
     def quantize(self, z):
         assert z.shape[-1] == self.embed_dim, f"Expected {self.embed_dim} dimensions, got {z.shape[-1]}"
@@ -113,7 +113,7 @@ class BinarySphericalQuantizer(nn.Module):
             cb_entropy = codebook_entropy(zq, self.basis, self.embed_dim)
             entropy_penalty = self.gamma0 * persample_entropy - self.gamma * cb_entropy
 
-        # commit loss
+        # 提交损失 (commit loss)
         commit_loss = self.beta * torch.mean(((zq.detach() - z) ** 2).sum(dim=-1))
 
         return (
@@ -124,12 +124,12 @@ class BinarySphericalQuantizer(nn.Module):
         )
 
     def soft_entropy_loss(self, z):
-        # if we divide the code in subgroups of size group_size, the codebook will be of size 2 ** group_size
-        # the sub-code is the last group_size bits of the full code
+        # 如果我们将代码划分为大小为 group_size 的子组，则码本的大小将为 2 ** group_size
+        # 子码是完整代码的最后 group_size 位
         group_code_book = self.group_codebook / (self.embed_dim ** 0.5 if self.l2_norm else 1)
         divided_z = rearrange(z, '... (g c) -> ... g c', c=self.group_size)
 
-        # we calculate the distance between the divided_z and the codebook for each subgroup
+        # 我们计算每个子组的 divided_z 和码本之间的距离
         distance = - 2 * torch.einsum('... g c, d c ->... g d', divided_z, group_code_book)
         prob = (-distance * self.inv_temperature).softmax(dim=-1)
         if self.persample_entropy_compute == 'analytical':
@@ -142,11 +142,11 @@ class BinarySphericalQuantizer(nn.Module):
         else:
             per_sample_entropy = self.get_entropy(prob, dim=-1, normalize=False).sum(dim=-1).mean()
 
-        # macro average of the probability of each subgroup
+        # 每个子组概率的宏平均
         avg_prob = reduce(prob, '... g d ->g d', 'mean')
         codebook_entropy = self.get_entropy(avg_prob, dim=-1, normalize=False)
 
-        # the approximation of the entropy is the sum of the entropy of each subgroup
+        # 熵的近似值是每个子组的熵之和
         return per_sample_entropy, codebook_entropy.sum(), avg_prob
 
     def get_hard_per_sample_entropy(self, zb_by_sample):
@@ -332,8 +332,8 @@ class MultiHeadAttentionWithRoPE(nn.Module):
         q, k = self.rotary(q, k)
 
         if key_padding_mask is not None:
-            attn_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)  # [batch, 1, 1, seq_len]
-            attn_mask = attn_mask.expand(-1, self.n_heads, seq_len, -1)  # [batch, n_heads, q_len, k_len]
+            attn_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)  # [批次, 1, 1, 序列长度]
+            attn_mask = attn_mask.expand(-1, self.n_heads, seq_len, -1)  # [批次, 头数, 查询长度, 键长度]
         else:
             attn_mask = None
 
@@ -418,8 +418,8 @@ class HierarchicalEmbedding(nn.Module):
 
         t = token_ids.long()
         mask = (1 << s2_bits) - 1
-        s2_ids = t & mask           # extract low bits
-        s1_ids = t >> s2_bits       # extract high bits
+        s2_ids = t & mask           # 提取低位
+        s1_ids = t >> s2_bits       # 提取高位
         return s1_ids, s2_ids
 
     def forward(self, token_ids):

@@ -50,24 +50,24 @@ class TimeSeriesTokenizer(nn.Module, PyTorchModelHubMixin):
 
         self.s1_bits = s1_bits
         self.s2_bits = s2_bits
-        self.codebook_dim = s1_bits + s2_bits # Total dimension of the codebook after quantization
+        self.codebook_dim = s1_bits + s2_bits # 量化后码本的总维度
         self.embed = nn.Linear(self.d_in, self.d_model)
         self.head = nn.Linear(self.d_model, self.d_in)
 
-        # Encoder Transformer Blocks
+        # 编码器 Transformer 块
         self.encoder = nn.ModuleList([
             TransformerBlock(self.d_model, self.n_heads, self.ff_dim, self.ffn_dropout_p, self.attn_dropout_p, self.resid_dropout_p)
             for _ in range(self.enc_layers - 1)
         ])
-        # Decoder Transformer Blocks
+        # 解码器 Transformer 块
         self.decoder = nn.ModuleList([
             TransformerBlock(self.d_model, self.n_heads, self.ff_dim, self.ffn_dropout_p, self.attn_dropout_p, self.resid_dropout_p)
             for _ in range(self.dec_layers - 1)
         ])
-        self.quant_embed = nn.Linear(in_features=self.d_model, out_features=self.codebook_dim) # Linear layer before quantization
-        self.post_quant_embed_pre = nn.Linear(in_features=self.s1_bits, out_features=self.d_model) # Linear layer after quantization (pre part - s1 bits)
-        self.post_quant_embed = nn.Linear(in_features=self.codebook_dim, out_features=self.d_model) # Linear layer after quantization (full codebook)
-        self.tokenizer = BSQuantizer(self.s1_bits, self.s2_bits, beta, gamma0, gamma, zeta, group_size) # BSQuantizer module
+        self.quant_embed = nn.Linear(in_features=self.d_model, out_features=self.codebook_dim) # 量化前的线性层
+        self.post_quant_embed_pre = nn.Linear(in_features=self.s1_bits, out_features=self.d_model) # 量化后的线性层 (前半部分 - s1 bits)
+        self.post_quant_embed = nn.Linear(in_features=self.codebook_dim, out_features=self.d_model) # 量化后的线性层 (完整码本)
+        self.tokenizer = BSQuantizer(self.s1_bits, self.s2_bits, beta, gamma0, gamma, zeta, group_size) # BSQuantizer 模块
 
     def forward(self, x):
         """
@@ -89,21 +89,21 @@ class TimeSeriesTokenizer(nn.Module, PyTorchModelHubMixin):
         for layer in self.encoder:
             z = layer(z)
 
-        z = self.quant_embed(z) # (B, T, codebook)
+        z = self.quant_embed(z) # (批次, 时间步, 码本)
 
         bsq_loss, quantized, z_indices = self.tokenizer(z)
 
-        quantized_pre = quantized[:, :, :self.s1_bits] # Extract the first part of quantized representation (s1_bits)
+        quantized_pre = quantized[:, :, :self.s1_bits] # 提取量化表示的第一部分 (s1_bits)
         z_pre = self.post_quant_embed_pre(quantized_pre)
 
         z = self.post_quant_embed(quantized)
 
-        # Decoder layers (for pre part - s1 bits)
+        # 解码器层 (用于前半部分 - s1 bits)
         for layer in self.decoder:
             z_pre = layer(z_pre)
         z_pre = self.head(z_pre)
 
-        # Decoder layers (for full codebook)
+        # 解码器层 (用于完整码本)
         for layer in self.decoder:
             z = layer(z)
         z = self.head(z)
@@ -122,18 +122,18 @@ class TimeSeriesTokenizer(nn.Module, PyTorchModelHubMixin):
             torch.Tensor: Bit representation tensor.
         """
         if half:
-            x1 = x[0] # Assuming x is a tuple of indices if half is True
+            x1 = x[0] # 假设如果 half 为 True，则 x 是索引元组
             x2 = x[1]
-            mask = 2 ** torch.arange(self.codebook_dim//2, device=x1.device, dtype=torch.long) # Create a mask for bit extraction
-            x1 = (x1.unsqueeze(-1) & mask) != 0 # Extract bits for the first half
-            x2 = (x2.unsqueeze(-1) & mask) != 0 # Extract bits for the second half
-            x = torch.cat([x1, x2], dim=-1) # Concatenate the bit representations
+            mask = 2 ** torch.arange(self.codebook_dim//2, device=x1.device, dtype=torch.long) # 创建位提取的掩码
+            x1 = (x1.unsqueeze(-1) & mask) != 0 # 提取前半部分的位
+            x2 = (x2.unsqueeze(-1) & mask) != 0 # 提取后半部分的位
+            x = torch.cat([x1, x2], dim=-1) # 连接位表示
         else:
-            mask = 2 ** torch.arange(self.codebook_dim, device=x.device, dtype=torch.long) # Create a mask for bit extraction
-            x = (x.unsqueeze(-1) & mask) != 0 # Extract bits
+            mask = 2 ** torch.arange(self.codebook_dim, device=x.device, dtype=torch.long) # 创建位提取的掩码
+            x = (x.unsqueeze(-1) & mask) != 0 # 提取位
 
-        x = x.float() * 2 - 1 # Convert boolean to bipolar (-1, 1)
-        q_scale = 1. / (self.codebook_dim ** 0.5) # Scaling factor
+        x = x.float() * 2 - 1 # 将布尔值转换为双极性 (-1, 1)
+        q_scale = 1. / (self.codebook_dim ** 0.5) # 缩放因子
         x = x * q_scale
         return x
 
@@ -269,7 +269,7 @@ class TimeSeriesTransformer(nn.Module, PyTorchModelHubMixin):
             sample_s1_ids = torch.multinomial(s1_probs.view(-1, self.s1_vocab_size), 1).view(s1_ids.shape)
             sibling_embed = self.embedding.emb_s1(sample_s1_ids)
 
-        x2 = self.dep_layer(x, sibling_embed, key_padding_mask=padding_mask) # Dependency Aware Layer: Condition on s1 embeddings
+        x2 = self.dep_layer(x, sibling_embed, key_padding_mask=padding_mask) # 依赖感知层：以 s1 嵌入为条件
         s2_logits = self.head.cond_forward(x2)
         return s1_logits, s2_logits
 
@@ -343,8 +343,8 @@ def top_k_top_p_filtering(
     From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
     """
     if top_k > 0:
-        top_k = min(max(top_k, min_tokens_to_keep), logits.size(-1))  # Safety check
-        # Remove all tokens with a probability less than the last token of the top-k
+        top_k = min(max(top_k, min_tokens_to_keep), logits.size(-1))  # 安全检查
+        # 删除所有概率小于 top-k 最后一个 token 的 token
         indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
         logits[indices_to_remove] = filter_value
         return logits
@@ -353,16 +353,16 @@ def top_k_top_p_filtering(
         sorted_logits, sorted_indices = torch.sort(logits, descending=True)
         cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
 
-        # Remove tokens with cumulative probability above the threshold (token with 0 are kept)
+        # 删除累积概率超过阈值的 token（概率为 0 的 token 保留）
         sorted_indices_to_remove = cumulative_probs > top_p
         if min_tokens_to_keep > 1:
-            # Keep at least min_tokens_to_keep (set to min_tokens_to_keep-1 because we add the first one below)
+            # 至少保留 min_tokens_to_keep（设置为 min_tokens_to_keep-1 因为我们在下面添加了第一个）
             sorted_indices_to_remove[..., :min_tokens_to_keep] = 0
-        # Shift the indices to the right to keep also the first token above the threshold
+        # 将索引向右移动以同时保留高于阈值的第一个 token
         sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
         sorted_indices_to_remove[..., 0] = 0
 
-        # scatter sorted tensors to original indexing
+        # 将排序后的张量分散到原始索引
         indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
         logits[indices_to_remove] = filter_value
         return logits
@@ -489,7 +489,7 @@ class TimeSeriesPredictor:
         self.amt_vol = 'amount'
         self.time_cols = ['minute', 'hour', 'weekday', 'day', 'month']
         
-        # Auto-detect device if not specified
+        # 如果未指定，则自动检测设备
         if device is None:
             if torch.cuda.is_available():
                 device = "cuda:0"
@@ -524,8 +524,8 @@ class TimeSeriesPredictor:
 
         df = df.copy()
         if self.vol_col not in df.columns:
-            df[self.vol_col] = 0.0  # Fill missing volume with zeros
-            df[self.amt_vol] = 0.0  # Fill missing amount with zeros
+            df[self.vol_col] = 0.0  # 用零填充缺失的 volume
+            df[self.amt_vol] = 0.0  # 用零填充缺失的 amount
         if self.amt_vol not in df.columns and self.vol_col in df.columns:
             df[self.amt_vol] = df[self.vol_col] * df[self.price_cols].mean(axis=1)
 

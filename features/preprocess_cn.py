@@ -209,7 +209,7 @@ def main():
     panel_me = panel_me.dropna(subset=["label_next_month", "mom_60d"])
     panel_me.to_parquet(SAVE_PATH, compression="snappy")
     
-    # User Visibility: Audit cleaned features
+    # 用户可见性：审核清理后的特征
     print("\n" + "="*40)
     print("  Feature Engineering Audit")
     print("="*40)
