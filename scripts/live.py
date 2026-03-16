@@ -29,10 +29,10 @@ def main():
     print("#"*60)
     
     # Define script paths
-    fetch_cn      = os.path.join(BASE_DIR, "scripts", "data_fetch_cn.py")
-    fetch_macro   = os.path.join(BASE_DIR, "scripts", "data_fetch_macro.py")
+    fetch_cn      = os.path.join(BASE_DIR, "liumon", "data", "data_fetch_cn.py")
+    fetch_macro   = os.path.join(BASE_DIR, "liumon", "data", "data_fetch_macro.py")
     preprocess    = os.path.join(BASE_DIR, "features", "preprocess_cn.py")
-    train_predict = os.path.join(BASE_DIR, "scripts", "train_pipeline_cn.py")
+    train_predict = os.path.join(BASE_DIR, "scripts", "train.py")
     
     # Execution Flow
     run_step("Data Ingestion (A-Share)", fetch_cn)
