@@ -10,7 +10,7 @@ from alpharanker.configs.cap_aware_weights import get_weights
 
 FEATURES_PATH = os.path.join(CN_DIR, 'cn_features_enhanced.parquet')
 MACRO_PATH = os.path.join(CN_DIR, 'macro_regime.parquet')
-BUDGET = 500.0  # 500 RMB
+BUDGET = 500.0  # 500 人民币
 
 def generate_signals(df, latest_macro, use_model=True):
     print(f"\n[500元小助手] 正在基于 {df['date'].max().date()} 数据生成信号...")

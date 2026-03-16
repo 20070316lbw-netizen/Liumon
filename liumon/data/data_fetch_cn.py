@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, date
 from tqdm import tqdm
 
-# Ensure config is accessible
+# 确保配置可访问
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config import PRICE_DIR, CN_DIR
 
@@ -23,7 +23,7 @@ def fetch_stock_data(ticker_std, start_date="2014-01-01", end_date=None):
         
     file_path = os.path.join(PRICE_DIR, f"{ticker_std}.parquet")
     
-    # Logic for incremental vs full
+    # 增量与全量的逻辑
     if os.path.exists(file_path):
         existing_df = pd.read_parquet(file_path)
         last_date = existing_df.index.max()
@@ -94,14 +94,14 @@ def main():
     
     success_stocks = []
     
-    # Process a subset or all
-    # For demonstration/first run, we might want to just show one stock's audit as requested
+    # 处理一个子集或全部
+    # 对于演示/首次运行，我们可能只想按要求显示一只股票的审计
     for i, ticker in enumerate(tqdm(tickers, desc="Syncing Data")):
         status, df = fetch_stock_data(ticker)
         if status == "SUCCESS":
             success_stocks.append(ticker)
         
-        # User visibility: Show info for the first successful stock found
+        # 用户可见性：显示找到的第一只成功股票的信息
         if i == 0 and df is not None:
             print(f"\n[Audit] Data Sample for {ticker}:")
             print("-" * 30)
