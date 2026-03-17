@@ -57,11 +57,12 @@ def compute_momentum(prices, window=60):
 - 📌 **长期**：`60d`, `120d`
 
 ### 4.3 预处理流水线
-严格的工程管线确保信号的可靠性：
-- ✅ **MAD 去极值**：中位数绝对偏差处理异常值。
-- ✅ **市值中性化**：通过对市值代理变量的 OLS 回归提取残差。
-- ✅ **行业中性化**：行业内的横截面去均值处理。
-- ✅ **因子正交化**：执行 `Vol ~ Mom` 回归以提取纯净的波动率 Alpha。
+严格的工程管线确保信号的可靠性。`features/preprocess_cn.py` 流水线执行以下步骤：
+- ✅ **MAD 去极值**：中位数绝对偏差处理异常值。我们对极端值进行去极值处理，以维持统计的完整性。
+- ✅ **市值中性化**：通过对市值代理变量的 OLS 回归提取残差。因子将针对 `size_proxy` (价格和成交量乘积的对数) 进行中性化。
+- ✅ **行业中性化**：行业内的横截面去均值处理。归一化后，因子根据 `industry_name` 分组并转换为百分位排名。
+- ✅ **因子正交化**：执行 `Vol ~ Mom` 回归以提取纯净的波动率 Alpha。我们将动量效应从波动率中剥离出来。
+- ✅ **排名标签化**：为了满足 LambdaRank 模型要求，下个月的收益率将被转换为分类的排名标签 (0-4，分成五等分)。
 
 **代码实现亮点 (中性化):**
 ```python
@@ -224,11 +225,40 @@ def compute_ic(pred, future_returns):
 - **优化后 t-stat**: 2.2775
 - **过拟合差距监控**: 详细日志请参阅 `liumon/research_db/`。
 
-## 12 环境复现
-复现 Liumon 环境：
-1. `git clone https://github.com/20070316lbw-netizen/Liumon.git`
-2. `pip install -r requirements.txt`
-3. `python scripts/live.py` (运行完整的生产流水线)
+## 12 环境复现 (快速开始指南)
+复现 Liumon 环境并运行完整流水线：
+1. **克隆仓库：**
+   ```bash
+   git clone https://github.com/20070316lbw-netizen/Liumon.git
+   cd Liumon
+   ```
+2. **安装依赖：**
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **运行完整生产流水线：**
+   该脚本将自动化数据摄取、宏观特征抓取、特征工程处理以及模型训练过程。
+   ```bash
+   python scripts/live.py
+   ```
+   **分步执行指引 (替代方案)：**
+   - **数据抓取：** 抓取 A 股 OHLCV 行情数据以及宏观环境数据。
+     ```bash
+     python liumon/data/data_fetch_cn.py
+     python liumon/data/data_fetch_macro.py
+     ```
+   - **特征预处理：** 生成特征，进行中性化处理，并保存特征矩阵。
+     ```bash
+     python features/preprocess_cn.py
+     ```
+   - **模型训练：** 训练 LambdaRank 模型。
+     ```bash
+     python scripts/train.py
+     ```
+   - **回测实验 (可选)：** 使用历史数据运行回测仿真。
+     ```bash
+     python scripts/backtest.py
+     ```
 
 ---
 
