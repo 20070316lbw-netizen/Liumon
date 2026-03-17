@@ -57,11 +57,12 @@ The framework generates labels for multiple time horizons to capture different a
 - 📌 **Long-term**: `60d`, `120d`
 
 ### 4.3 Preprocessing Pipeline
-Strict engineering pipeline to ensure signal reliability:
-- ✅ **MAD Winsorization**: Median Absolute Deviation for outlier handling.
-- ✅ **Size Neutralization**: OLS residual extraction against market-cap proxies.
-- ✅ **Industry Neutralization**: Cross-sectional de-meaning within sectors.
-- ✅ **Factor Orthogonalization**: `Vol ~ Mom` regression to extract pure volatility alpha.
+Strict engineering pipeline to ensure signal reliability. The `features/preprocess_cn.py` pipeline applies the following steps:
+- ✅ **MAD Winsorization**: Median Absolute Deviation for outlier handling. We winsorize extreme values to maintain statistical integrity.
+- ✅ **Size Neutralization**: OLS residual extraction against market-cap proxies. Factors are neutralized against `size_proxy` (computed as log of price * volume).
+- ✅ **Industry Neutralization**: Cross-sectional de-meaning within sectors. After normalization, factors are grouped by `industry_name` and converted to percentile ranks.
+- ✅ **Factor Orthogonalization**: `Vol ~ Mom` regression to extract pure volatility alpha. We strip the momentum effect from volatility.
+- ✅ **Rank Labelling**: For the LambdaRank model, next month's returns are converted into categorical rank labels (0-4) by quintile bucketing.
 
 **Implementation Highlight (Neutralization):**
 ```python
@@ -224,11 +225,40 @@ def compute_ic(pred, future_returns):
 - **Optimized t-stat**: 2.2775
 - **Overfitting Gap Monitor**: Detailed logs available in `liumon/research_db/`.
 
-## 12 Reproducibility
-To replicate the Liumon environment:
-1. `git clone https://github.com/20070316lbw-netizen/Liumon.git`
-2. `pip install -r requirements.txt`
-3. `python scripts/live.py` (For full production pipeline)
+## 12 Reproducibility (Quick Start Guide)
+To replicate the Liumon environment and run the full pipeline:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/20070316lbw-netizen/Liumon.git
+   cd Liumon
+   ```
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Run the full production pipeline:**
+   This script automates data ingestion, macro feature fetching, feature engineering, and model training.
+   ```bash
+   python scripts/live.py
+   ```
+   **Alternative step-by-step execution:**
+   - **Data Fetching:** Fetch A-share OHLCV data and macroeconomic regimes.
+     ```bash
+     python liumon/data/data_fetch_cn.py
+     python liumon/data/data_fetch_macro.py
+     ```
+   - **Feature Preprocessing:** Generate features, perform neutralization, and save the feature matrix.
+     ```bash
+     python features/preprocess_cn.py
+     ```
+   - **Model Training:** Train the LambdaRank model.
+     ```bash
+     python scripts/train.py
+     ```
+   - **Backtesting (Optional):** Run a simulation using historical data.
+     ```bash
+     python scripts/backtest.py
+     ```
 
 ---
 
