@@ -129,6 +129,10 @@ def main():
         test_df = df[~df["date"].isin(train_dates)]
     else:
         print(f">> 切分完成: Train ({train_df['date'].min().date()} ~ {train_df['date'].max().date()}) | Test (2024 All)")
+
+    if train_df.empty or test_df.empty:
+        print("⚠️ 数据集为空，跳过模型训练。")
+        return
     
     tr_df, X_train, y_train, q_train = prepare_data(train_df)
     va_df, X_test, y_test, q_test = prepare_data(test_df)
