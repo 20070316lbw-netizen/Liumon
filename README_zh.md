@@ -260,6 +260,19 @@ def compute_ic(pred, future_returns):
      python scripts/backtest.py
      ```
 
+### 12.1 每日自动化报告
+
+Liumon 包含一个自动化脚本 `scripts/daily_report.py`，用于每天自动抓取最新数据、执行预测并生成每日选股报告（保存在 `reports/` 目录下）。
+
+**如何配置 Cron 定时任务 (每天下午 16:00 运行):**
+```bash
+# 打开 crontab 编辑器
+crontab -e
+
+# 添加以下内容 (请替换 /path/to/Liumon 为你实际的项目路径，并确保使用正确的 python 环境路径)
+0 16 * * * cd /path/to/Liumon && PYTHONPATH=$(pwd) /usr/bin/python3 scripts/daily_report.py >> /path/to/Liumon/reports/daily.log 2>&1
+```
+
 ---
 
 ## ⚠️ Disclaimer / 免责声明

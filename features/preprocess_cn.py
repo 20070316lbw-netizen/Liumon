@@ -119,6 +119,12 @@ def main():
         res = calculate_stock_features(f)
         if res is not None:
             all_stocks.append(res)
+
+    if not all_stocks:
+        print("未处理任何股票数据。")
+        # Write an empty DataFrame to avoid errors in subsequent steps
+        pd.DataFrame(columns=["date", "ticker", "raw_close", "label_next_month"]).to_parquet(SAVE_PATH)
+        return
     
     full_panel = pd.concat(all_stocks, ignore_index=True)
     full_panel["date"] = pd.to_datetime(full_panel["date"])
