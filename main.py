@@ -90,8 +90,9 @@ def show_menu():
             'choices': [
                 Choice('run', name='🚀 运行完整流水线 (推荐)'),
                 Choice('test', name='🧪 测试核心功能'),
+                Choice('view', name='📊 查看数据状态'),
                 Choice('fetch', name='📥 抓取最新数据'),
-                Choice('predict', name='📊 生成选股报告'),
+                Choice('predict', name='📈 生成选股报告'),
                 Choice('reports', name='📁 查看历史报告'),
                 Choice('train', name='🎯 训练模型'),
                 Choice('exit', name='❌ 退出'),
@@ -108,17 +109,18 @@ def show_simple_menu():
     print("\n请选择操作:")
     print("  1. 运行完整流水线 (推荐)")
     print("  2. 测试核心功能")
-    print("  3. 抓取最新数据")
-    print("  4. 生成选股报告")
-    print("  5. 查看历史报告")
-    print("  6. 训练模型")
+    print("  3. 查看数据状态")
+    print("  4. 抓取最新数据")
+    print("  5. 生成选股报告")
+    print("  6. 查看历史报告")
+    print("  7. 训练模型")
     print("  0. 退出")
     
     choice = input("\n输入选项 (默认 1): ").strip() or '1'
     
     mapping = {
-        '1': 'run', '2': 'test', '3': 'fetch',
-        '4': 'predict', '5': 'reports', '6': 'train',
+        '1': 'run', '2': 'test', '3': 'view', '4': 'fetch',
+        '5': 'predict', '6': 'reports', '7': 'train',
         '0': 'exit'
     }
     
@@ -131,6 +133,14 @@ def cmd_test():
     
     from test_core_functions import main as test_main
     test_main()
+
+def cmd_view():
+    """查看数据状态"""
+    if RICH_AVAILABLE:
+        console.rule("[bold cyan]数据状态查看[/bold cyan]")
+    
+    from view_data import main as view_main
+    view_main()
 
 def cmd_fetch():
     """抓取最新数据"""
@@ -311,6 +321,7 @@ def main():
             # 执行命令
             commands = {
                 'test': cmd_test,
+                'view': cmd_view,
                 'fetch': cmd_fetch,
                 'predict': cmd_predict,
                 'run': cmd_run,
