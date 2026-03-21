@@ -1,7 +1,6 @@
 @echo off
 REM ======================================================
-REM Liumon CLI Launcher
-REM 这是唯一需要的 .bat 文件，其他都用 Python
+REM Liumon 启动器
 REM ======================================================
 
 cd /d C:\Users\lbw15\Desktop\Liumon
@@ -11,7 +10,7 @@ if exist venv\Scripts\activate.bat (
     call venv\Scripts\activate.bat
 )
 
-REM 调用 Python CLI
-python cli.py %*
+REM 启动主程序
+python main.py
 
 pause
