@@ -35,15 +35,11 @@ def generate_report_content(df, latest_macro, use_model=True):
         max_date = pd.Timestamp.today()
     date_str = pd.to_datetime(max_date).strftime('%Y-%m-%d')
     report_lines = []
-    report_lines.append("=" * 60)
-    report_lines.append(f"  LIUMON 每日选股报告")
-    report_lines.append(f"  日期: {date_str}")
-    report_lines.append(f"  生成时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    report_lines.append("=" * 60)
-    report_lines.append("")
-    report_lines.append(f"【市场环境】")
-    report_lines.append(f"当前市场状态: {latest_macro}")
-    report_lines.append("")
+    report_lines.append("# LIUMON 每日选股报告\n")
+    report_lines.append(f"**日期:** {date_str}  ")
+    report_lines.append(f"**生成时间:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  \n")
+    report_lines.append("## 市场环境\n")
+    report_lines.append(f"- **当前市场状态:** {latest_macro}\n")
 
     df['regime'] = 1 if latest_macro == "Bull" else 0
     price_limit = 4.80
@@ -77,21 +73,16 @@ def generate_report_content(df, latest_macro, use_model=True):
 
     top_picks = candidates.sort_values('alpha_score', ascending=False).head(2)
 
-    report_lines.append("【推荐持仓信号 (500元本金上限)】")
-    report_lines.append("-" * 40)
+    report_lines.append("## 推荐持仓信号 (500元本金上限)\n")
 
     if top_picks.empty:
         report_lines.append("未找到符合条件的标的。")
     else:
+        report_lines.append("| 股票代码 | 当前价格 | 买入单位 | 预计成本 | LambdaRank评分 | 静态权重评分 |")
+        report_lines.append("|---|---|---|---|---|---|")
         for _, row in top_picks.iterrows():
             cost_100 = row['raw_close'] * 100
-            report_lines.append(f"股票代码: {row['ticker']}")
-            report_lines.append(f"当前价格: {row['raw_close']:.2f} 元")
-            report_lines.append(f"买入单位: 100 股")
-            report_lines.append(f"预计成本: {cost_100:.1f} 元 (+ 佣金)")
-            report_lines.append(f"LambdaRank评分: {row['alpha_score']:.4f}")
-            report_lines.append(f"静态权重评分:  {row['static_score']:.4f}")
-            report_lines.append("-" * 40)
+            report_lines.append(f"| {row['ticker']} | {row['raw_close']:.2f} 元 | 100 股 | {cost_100:.1f} 元 (+ 佣金) | {row['alpha_score']:.4f} | {row['static_score']:.4f} |")
 
     report_lines.append("\n*免责声明: 本报告仅供学习和研究使用，不构成任何投资建议，请谨慎使用。*")
     return "\n".join(report_lines)
