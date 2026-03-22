@@ -24,12 +24,24 @@ echo "============================================================" >> "$LOG_FIL
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] 启动 LIUMON 每日选股流水线..." >> "$LOG_FILE"
 echo "============================================================" >> "$LOG_FILE"
 
-# 运行 Python 脚本并将输出记录到日志文件
-if python3 scripts/daily_report.py >> "$LOG_FILE" 2>&1; then
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] 流水线执行成功并完成。" >> "$LOG_FILE"
-    echo "流水线执行成功。日志见: $LOG_FILE"
+# 运行数据抓取和模型预测 (live.py)
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] 正在运行 live.py (数据获取、特征工程、模型预测)" >> "$LOG_FILE"
+if python3 scripts/live.py >> "$LOG_FILE" 2>&1; then
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] ✅ live.py 执行成功。" >> "$LOG_FILE"
 else
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] ❌ 流水线执行失败！请检查日志。" >> "$LOG_FILE"
-    echo "流水线执行失败。请检查日志: $LOG_FILE"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] ❌ live.py 执行失败！请检查日志。" >> "$LOG_FILE"
+    echo "live.py 执行失败。请检查日志: $LOG_FILE"
+    exit 1
+fi
+
+# 生成每日格式化报告
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] 正在运行 daily_report.py (生成每日格式化报告)" >> "$LOG_FILE"
+if python3 scripts/daily_report.py >> "$LOG_FILE" 2>&1; then
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] ✅ daily_report.py 执行成功。" >> "$LOG_FILE"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] 流水线执行成功并完成。生成报告已存入文件夹。" >> "$LOG_FILE"
+    echo "流水线执行成功并完成。日志见: $LOG_FILE"
+else
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] ❌ daily_report.py 执行失败！请检查日志。" >> "$LOG_FILE"
+    echo "daily_report.py 执行失败。请检查日志: $LOG_FILE"
     exit 1
 fi
