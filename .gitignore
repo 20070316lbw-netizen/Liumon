@@ -41,3 +41,4 @@ data/us/prices/*.parquet
 
 # Models (optional - keep if you want to version them)
 # models/*.pkl
+data/cn/.fetch_checkpoint.json
