@@ -14,10 +14,16 @@ def run_step(name, script_path):
     # 使用正在运行此脚本的相同 python 可执行文件
     cmd = [sys.executable, script_path]
     
+    env = os.environ.copy()
+    if "PYTHONPATH" in env:
+        env["PYTHONPATH"] = BASE_DIR + os.pathsep + env["PYTHONPATH"]
+    else:
+        env["PYTHONPATH"] = BASE_DIR
+
     try:
         # 我们使用 check_call 确保进程在下一步之前完成
         # 输出实时定向到终端
-        subprocess.check_call(cmd)
+        subprocess.check_call(cmd, env=env)
         print(f"\n[SUCCESS] {name} completed.")
     except subprocess.CalledProcessError as e:
         print(f"\n[FAILED] {name} failed with exit code {e.returncode}. Pipeline aborted.")
