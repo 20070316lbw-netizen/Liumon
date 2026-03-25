@@ -43,7 +43,12 @@ def main():
         print("No historical data with valid future labels found.")
         sys.exit(1)
 
-    hist_latest_date = valid_hist["date"].max()
+    all_valid_dates = sorted(valid_hist["date"].unique())
+    if len(all_valid_dates) < 2:
+        print("Not enough historical data points to select the second-to-last date.")
+        sys.exit(1)
+
+    hist_latest_date = all_valid_dates[-2]
     print(f"Latest date with available real returns: {hist_latest_date}")
 
     cross_section = valid_hist[valid_hist["date"] == hist_latest_date].copy()
@@ -71,7 +76,7 @@ def main():
     plt.savefig(os.path.join(REPORT_DIR, f"pred_vs_actual_{hist_latest_date.strftime('%Y%m%d')}.png"))
     plt.close()
 
-    print("Charts generated successfully.")
+    print(f"Charts generated successfully. Rank IC for {hist_latest_date.date()}: {ic:.4f}")
 
 if __name__ == "__main__":
     main()
