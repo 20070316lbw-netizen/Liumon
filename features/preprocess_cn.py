@@ -174,6 +174,8 @@ def main():
         ind_df = pd.read_parquet(IND_MAP_PATH)
         panel_me = pd.merge(panel_me, ind_df, on="ticker", how="left")
         panel_me["industry_name"] = panel_me["industry_name"].fillna("Unknown")
+    else:
+        panel_me["industry_name"] = "Unknown"
     
     # ── 新增：市值代理变量 ──
     panel_me["size_proxy"] = np.log(panel_me["raw_close"] * panel_me["volume"] + 1e-6)
