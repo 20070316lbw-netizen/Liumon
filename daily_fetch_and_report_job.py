@@ -28,8 +28,13 @@ REPORT_DIR    = os.path.join(BASE_DIR, "reports")
 
 def run_step(name, script_path):
     print(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 开始执行: {name}")
+    env = os.environ.copy()
+    if "PYTHONPATH" in env:
+        env["PYTHONPATH"] = BASE_DIR + os.pathsep + env["PYTHONPATH"]
+    else:
+        env["PYTHONPATH"] = BASE_DIR
     try:
-        subprocess.check_call([sys.executable, script_path])
+        subprocess.check_call([sys.executable, script_path], env=env)
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ 成功完成: {name}")
     except subprocess.CalledProcessError as e:
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ 失败: {name} (退出码: {e.returncode})")
