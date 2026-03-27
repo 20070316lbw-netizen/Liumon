@@ -104,7 +104,9 @@ def generate_report_content(df: pd.DataFrame, latest_macro: str) -> str:
     latest_macro : "Bull" | "Bear"
     """
     now        = datetime.datetime.now()
-    max_date   = df["date"].max() if "date" in df.columns else pd.Timestamp.today()
+    max_date   = df["date"].max() if ("date" in df.columns and not df.empty) else pd.Timestamp.today()
+    if pd.isna(max_date):
+        max_date = pd.Timestamp.today()
     date_str   = pd.to_datetime(max_date).strftime("%Y-%m-%d")
     gen_time   = now.strftime("%Y-%m-%d %H:%M:%S")
     report_date = now.strftime("%Y年%m月%d日")
@@ -312,6 +314,8 @@ def main():
     else:
         df = pd.read_parquet(FEATURES_PATH)
         latest_date = df["date"].max()
+        if pd.isna(latest_date):
+            latest_date = pd.Timestamp.today()
         latest_df   = df[df["date"] == latest_date].copy()
 
         # 2. 获取宏观状态

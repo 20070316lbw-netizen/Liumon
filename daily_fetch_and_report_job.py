@@ -28,8 +28,13 @@ REPORT_DIR    = os.path.join(BASE_DIR, "reports")
 
 def run_step(name, script_path):
     print(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 开始执行: {name}")
+    env = os.environ.copy()
+    if "PYTHONPATH" in env:
+        env["PYTHONPATH"] = f"{BASE_DIR}{os.pathsep}{env['PYTHONPATH']}"
+    else:
+        env["PYTHONPATH"] = BASE_DIR
     try:
-        subprocess.check_call([sys.executable, script_path])
+        subprocess.check_call([sys.executable, script_path], env=env)
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ 成功完成: {name}")
     except subprocess.CalledProcessError as e:
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ 失败: {name} (退出码: {e.returncode})")
@@ -115,7 +120,9 @@ def _compute_market_summary(df: pd.DataFrame) -> dict:
 
 def generate_report_content(df: pd.DataFrame, latest_macro: str) -> str:
     now        = datetime.datetime.now()
-    max_date   = df["date"].max() if "date" in df.columns else pd.Timestamp.today()
+    max_date   = df["date"].max() if ("date" in df.columns and not df.empty) else pd.Timestamp.today()
+    if pd.isna(max_date):
+        max_date = pd.Timestamp.today()
     date_str   = pd.to_datetime(max_date).strftime("%Y-%m-%d")
     gen_time   = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -306,6 +313,8 @@ def generate_and_save_report():
     else:
         df = pd.read_parquet(FEATURES_PATH)
         latest_date = df["date"].max()
+        if pd.isna(latest_date):
+            latest_date = pd.Timestamp.today()
         latest_df   = df[df["date"] == latest_date].copy()
 
         regime = "Unknown"
