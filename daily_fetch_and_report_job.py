@@ -29,7 +29,9 @@ REPORT_DIR    = os.path.join(BASE_DIR, "reports")
 def run_step(name, script_path):
     print(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 开始执行: {name}")
     try:
-        subprocess.check_call([sys.executable, script_path])
+        env = os.environ.copy()
+        env["PYTHONPATH"] = BASE_DIR
+        subprocess.check_call([sys.executable, script_path], env=env)
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ✅ 成功完成: {name}")
     except subprocess.CalledProcessError as e:
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ❌ 失败: {name} (退出码: {e.returncode})")
@@ -115,7 +117,10 @@ def _compute_market_summary(df: pd.DataFrame) -> dict:
 
 def generate_report_content(df: pd.DataFrame, latest_macro: str) -> str:
     now        = datetime.datetime.now()
-    max_date   = df["date"].max() if "date" in df.columns else pd.Timestamp.today()
+    if not df.empty and "date" in df.columns and not pd.isna(df["date"].max()):
+        max_date = df["date"].max()
+    else:
+        max_date = pd.Timestamp.today()
     date_str   = pd.to_datetime(max_date).strftime("%Y-%m-%d")
     gen_time   = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -295,11 +300,7 @@ def generate_and_save_report():
 
     if not os.path.exists(FEATURES_PATH):
         print(f"❌ 特征库不存在: {FEATURES_PATH}")
-        dummy_df = pd.DataFrame({
-            "date":      [pd.Timestamp.today()],
-            "ticker":    ["N/A"],
-            "raw_close": [0.0],
-        })
+        dummy_df = pd.DataFrame(columns=["date", "ticker", "raw_close"])
         content = generate_report_content(dummy_df, "Unknown")
         date_str  = datetime.datetime.now().strftime("%Y%m%d")
         report_fp = os.path.join(REPORT_DIR, f"report_{date_str}.md")

@@ -104,7 +104,10 @@ def generate_report_content(df: pd.DataFrame, latest_macro: str) -> str:
     latest_macro : "Bull" | "Bear"
     """
     now        = datetime.datetime.now()
-    max_date   = df["date"].max() if "date" in df.columns else pd.Timestamp.today()
+    if not df.empty and "date" in df.columns and not pd.isna(df["date"].max()):
+        max_date = df["date"].max()
+    else:
+        max_date = pd.Timestamp.today()
     date_str   = pd.to_datetime(max_date).strftime("%Y-%m-%d")
     gen_time   = now.strftime("%Y-%m-%d %H:%M:%S")
     report_date = now.strftime("%Y年%m月%d日")
@@ -303,11 +306,7 @@ def main():
         print(f"❌ 特征库不存在: {FEATURES_PATH}")
         print("   请先运行「抓取数据」以生成特征文件。")
         # 生成一份空壳报告
-        dummy_df = pd.DataFrame({
-            "date":      [pd.Timestamp.today()],
-            "ticker":    ["N/A"],
-            "raw_close": [0.0],
-        })
+        dummy_df = pd.DataFrame(columns=["date", "ticker", "raw_close"])
         content = generate_report_content(dummy_df, "Unknown")
     else:
         df = pd.read_parquet(FEATURES_PATH)
