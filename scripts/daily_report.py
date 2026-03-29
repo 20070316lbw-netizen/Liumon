@@ -104,7 +104,7 @@ def generate_report_content(df: pd.DataFrame, latest_macro: str) -> str:
     latest_macro : "Bull" | "Bear"
     """
     now        = datetime.datetime.now()
-    if not df.empty and "date" in df.columns and not pd.isna(df["date"].max()):
+    if not df.empty and "date" in df.columns and pd.notna(df["date"].max()):
         max_date = df["date"].max()
     else:
         max_date = pd.Timestamp.today()
@@ -310,17 +310,22 @@ def main():
         content = generate_report_content(dummy_df, "Unknown")
     else:
         df = pd.read_parquet(FEATURES_PATH)
-        latest_date = df["date"].max()
-        latest_df   = df[df["date"] == latest_date].copy()
+        if not df.empty and "date" in df.columns and pd.notna(df["date"].max()):
+            latest_date = df["date"].max()
+            latest_df   = df[df["date"] == latest_date].copy()
+        else:
+            latest_date = pd.Timestamp.today()
+            latest_df   = pd.DataFrame(columns=["date", "ticker", "raw_close"])
 
         # 2. 获取宏观状态
         regime = "Unknown"
         if os.path.exists(MACRO_PATH):
             macro_df = pd.read_parquet(MACRO_PATH)
-            macro_df["date"] = pd.to_datetime(macro_df["date"])
-            m_match = macro_df[macro_df["date"] <= pd.to_datetime(latest_date)].tail(1)
-            if not m_match.empty:
-                regime = "Bull" if m_match["regime"].iloc[0] == 1 else "Bear"
+            if not macro_df.empty and "date" in macro_df.columns:
+                macro_df["date"] = pd.to_datetime(macro_df["date"])
+                m_match = macro_df[macro_df["date"] <= pd.to_datetime(latest_date)].tail(1)
+                if not m_match.empty:
+                    regime = "Bull" if m_match["regime"].iloc[0] == 1 else "Bear"
 
         content = generate_report_content(latest_df, regime)
 
