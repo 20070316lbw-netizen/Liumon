@@ -311,7 +311,11 @@ def main():
     else:
         df = pd.read_parquet(FEATURES_PATH)
         latest_date = df["date"].max()
-        latest_df   = df[df["date"] == latest_date].copy()
+        if pd.isna(latest_date):
+            latest_date = pd.Timestamp.today()
+            latest_df = pd.DataFrame(columns=df.columns)
+        else:
+            latest_df   = df[df["date"] == latest_date].copy()
 
         # 2. 获取宏观状态
         regime = "Unknown"
